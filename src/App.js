@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Switch, Route } from 'react-router-dom';
+import {Switch, Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import './App.css';
@@ -22,9 +22,9 @@ class App extends Component  {
 
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
       if (userAuth) {
-        const userRef = await createUserProfileDocument(userAuth);
+        const userRef = createUserProfileDocument(userAuth);
 
-         userRef.onSnapshot(snapShot => {
+         (await userRef).onSnapshot(snapShot => {
            setCurrentUser({
               id: snapShot.id,
               ...snapShot.data(),
@@ -46,15 +46,29 @@ class App extends Component  {
       <Switch>
         <Route exact path='/' component={HomePage} />
         <Route path='/shop' component={ShopPage} />
-        <Route path='/signin' component={SignInAndSignUpPage} />
+        <Route exact
+               path='/signin'
+               render= {() => 
+                this.props.currentUser ? (
+                      <Redirect to='/'  />
+                ) : (
+                  <SignInAndSignUpPage />
+                ) 
+               }     
+               />
       </Switch>
     </div>
   )
   };
 }
 
+const mapStateToProps = ({user}) => ({
+  currentUser:user.currentUser
+});
+
+/*dispatch return an action object*/
 const mapDispatchToProps = dispatch => ({
   setCurrentUser: user => dispatch(setCurrentUser(user))
 })
 
-export default connect(null, mapDispatchToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(App);

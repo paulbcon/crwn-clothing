@@ -35,6 +35,7 @@ const Header = ({currentUser}) => (
     </div>
 );
 
+/*state here is root reducer*/
 const mapStateToProps = state => ({
   currentUser: state.user.currentUser
 });
